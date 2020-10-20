@@ -26,7 +26,7 @@ public class SumUpServlet extends HttpServlet {
     private void processRequest(HttpServletResponse response, String value) {
         try {
             synchronized (this) {
-                while (!isEndToken(value)) {
+                if (!isEndToken(value)) {
                     sum.addAndGet(Integer.parseInt(value));
                     this.wait();
                 }
