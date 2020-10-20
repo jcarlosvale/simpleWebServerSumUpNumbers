@@ -20,7 +20,7 @@ public class SumUpServlet extends HttpServlet {
     private boolean releaseRequest;
 
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response) {
         String value = getValueFromRequest(request);
         processRequest(response, value);
     }
@@ -35,7 +35,7 @@ public class SumUpServlet extends HttpServlet {
                     this.wait();
                 }
                 this.notifyAll();
-                response.getOutputStream().print(String.valueOf(sum));
+                response.getWriter().print(sum);
                 currentThreads--;
                 if(currentThreads <= 0) {
                     currentThreads = 0;
@@ -44,9 +44,9 @@ public class SumUpServlet extends HttpServlet {
             }
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            log.log(Level.SEVERE, "Error processing request: {}", exception.getMessage());
+            log.log(Level.SEVERE, "Error processing request: {0}", exception.getMessage());
         } catch (IOException exception) {
-            log.log(Level.SEVERE, "Error writing the response: {}", exception.getMessage());
+            log.log(Level.SEVERE, "Error writing the response: {0}", exception.getMessage());
         }
     }
 
@@ -54,9 +54,9 @@ public class SumUpServlet extends HttpServlet {
         String value = "0";
         try {
             value = request.getReader().readLine();
-            log.log(Level.INFO, "Received value:{}", value);
+            log.log(Level.INFO, "Received value:{0}", value);
         } catch (IOException exception) {
-            log.log(Level.SEVERE, "Error parsing received value: {}", exception.getMessage());
+            log.log(Level.SEVERE, "Error parsing received value: {0}", exception.getMessage());
         }
         return value;
     }
