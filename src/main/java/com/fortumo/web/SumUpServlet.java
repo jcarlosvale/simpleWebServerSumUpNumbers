@@ -16,6 +16,8 @@ public class SumUpServlet extends HttpServlet {
 
     private static final Logger log = Logger.getLogger(SumUpServlet.class.getName());
     private final AtomicInteger sum = new AtomicInteger(0);
+    private static int currentThreads;
+    private boolean releaseRequest;
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -25,13 +27,20 @@ public class SumUpServlet extends HttpServlet {
 
     private void processRequest(HttpServletResponse response, String value) {
         try {
+            currentThreads++;
+            releaseRequest = "end".equals(value);
             synchronized (this) {
-                if (!isEndToken(value)) {
+                while (!releaseRequest) {
                     sum.addAndGet(Integer.parseInt(value));
                     this.wait();
                 }
                 this.notifyAll();
                 response.getOutputStream().print(String.valueOf(sum));
+                currentThreads--;
+                if(currentThreads <= 0) {
+                    currentThreads = 0;
+                    sum.set(0);
+                }
             }
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
@@ -50,9 +59,5 @@ public class SumUpServlet extends HttpServlet {
             log.log(Level.SEVERE, "Error parsing received value: {}", exception.getMessage());
         }
         return value;
-    }
-
-    private static boolean isEndToken(String value) {
-        return "end".equals(value);
     }
 }
