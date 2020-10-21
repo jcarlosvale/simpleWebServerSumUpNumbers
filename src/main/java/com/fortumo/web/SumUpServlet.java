@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,7 +15,7 @@ public class SumUpServlet extends HttpServlet {
     private static final long serialVersionUID = -2245494110623955028L;
 
     private static final Logger log = Logger.getLogger(SumUpServlet.class.getName());
-    private final AtomicInteger sum = new AtomicInteger(0);
+    private final AtomicLong sum = new AtomicLong(0);
     private static int currentThreads;
     private boolean releaseRequest;
 
@@ -25,17 +25,24 @@ public class SumUpServlet extends HttpServlet {
         processRequest(response, value);
     }
 
-    private void processRequest(HttpServletResponse response, String value) {
+    private void processRequest(HttpServletResponse response, String valueFromRequest) {
         try {
             currentThreads++;
-            releaseRequest = "end".equals(value);
+            releaseRequest = "end".equals(valueFromRequest);
+            long value = 0;
             synchronized (this) {
                 while (!releaseRequest) {
-                    sum.addAndGet(Integer.parseInt(value));
+                    try {
+                        value = Long.parseLong(valueFromRequest);
+                    } catch (NumberFormatException numberFormatException) {
+                        log.log(Level.SEVERE, "Error parsing as Long: {0}", valueFromRequest);
+                    }
+                    sum.addAndGet(value);
                     this.wait();
                 }
                 this.notifyAll();
                 response.getWriter().print(sum);
+                log.log(Level.INFO, "Returning value:{0}", sum);
                 currentThreads--;
                 if(currentThreads <= 0) {
                     currentThreads = 0;
