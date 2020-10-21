@@ -27,15 +27,22 @@ To generate WAR and DOCKER IMAGE:
 
     mvn clean package
 
-To run (using docker):
-
-    docker run -p 8080:8080 jcarlosvale/sum-up-application:1.0
-    
 To run tests:
 
     mvn test
 
-How to test or validate if it is working (using CURL):
+## Running using docker:
+
+    docker run -p 8080:8080 jcarlosvale/sum-up-application:1.0
+
+## Running manually in TomCat:
+1. Generate the WAR (mvn clean package command)
+2. Copy the WAR file you have just created, located on target/ folder, to CATALINA_HOME/webapps, e.g., c:/Tomcat8
+/webapps.
+3. Start the Tomcat server.
+
+## How to test or validate if it is working 
+### Using CURL:
 Open multiple terminal and execute for example
     
     curl -d 12 http://localhost:8080/   (terminal 1 - will be locked)
